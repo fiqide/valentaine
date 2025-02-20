@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-image: url('https://example.com/game-background.jpg'); /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+        }
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 2em;
+            color: white;
+            text-shadow: 2px 2px 4px black;
+        }
+        .emoji {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            transition: transform 0.1s;
+        }
+        .trail {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 1.5em;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="score">Score: 0</div>
+    <button class="button" id="resetButton">Reset</button>
+    <script>
+        const emojis = ['🍫', '😍', '💖', '🌹', '🤩', '🍬', '🍩', '🍪', '❤️'];
+        const gravity = 0.5;
+        const friction = 0.97;
+        const bounce = -0.7;
+        let score = 0;
+        const scoreElement = document.querySelector('.score');
+        const resetButton = document.getElementById('resetButton');
+
+        document.addEventListener('click', (event) => {
+            const count = Math.floor(Math.random() * 10) + 5; // Random number between 5 and 14
+            for (let i = 0; i < count; i++) {
+                createEmoji(event.clientX, event.clientY);
+            }
+            score += count;
+            scoreElement.textContent = `Score: ${score}`;
+        });
+
+        resetButton.addEventListener('click', () => {
+            score = 0;
+            scoreElement.textContent = `Score: ${score}`;
+            document.querySelectorAll('.emoji').forEach(emoji => emoji.remove());
+        });
+
+        function createEmoji(x, y) {
+            const emojiElement = document.createElement('div');
+            emojiElement.classList.add('emoji');
+            emojiElement.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            emojiElement.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            document.body.appendChild(emojiElement);
+
+            let velocityX = (Math.random() - 0.5) * 10;
+            let velocityY = (Math.random() - 0.5) * 10 - 5; // Make them go up initially
+            let positionX = x;
+            let positionY = y;
+            let scale = 1;
+            let rotation = 0;
+
+            function update() {
+                velocityY += gravity;
+                velocityX *= friction;
+                velocityY *= friction;
+
+                positionX += velocityX;
+                positionY += velocityY;
+
+                scale += (Math.random() - 0.5) * 0.05;
+                rotation += (Math.random() - 0.5) * 0.1;
+
+                if (positionY + emojiElement.offsetHeight >= window.innerHeight) {
+                    positionY = window.innerHeight - emojiElement.offsetHeight;
+                    velocityY *= bounce;
+                }
+
+                if (positionX + emojiElement.offsetWidth >= window.innerWidth || positionX <= 0) {
+                    velocityX *= bounce;
+                }
+
+                emojiElement.style.left = `${positionX}px`;
+                emojiElement.style.top = `${positionY}px`;
+                emojiElement.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+
+                if (Math.abs(velocityY) < 0.1 && positionY === window.innerHeight - emojiElement.offsetHeight) {
+                    document.body.removeChild(emojiElement);
+                } else {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            update();
+        }
+
+        function createTrail(x, y) {
+            const trailElement = document.createElement('div');
+            trailElement.classList.add('trail');
+            trailElement.style.left = `${x}px`;
+            trailElement.style.top = `${y}px`;
+            document.body.appendChild(trailElement);
+
+            setTimeout(() => {
+                document.body.removeChild(trailElement);
+            }, 500);
+        }
+
+        document.addEventListener('click', (event) => {
+            createTrail(event.clientX, event.clientY);
+        });
+    </script>
+</body>
+</html>
